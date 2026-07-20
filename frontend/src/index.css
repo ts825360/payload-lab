@@ -194,14 +194,30 @@ body {
   color: var(--danger-border);
 }
 
-.attempt-form input {
+.input-group {
+  margin-bottom: 0.5rem;
+}
+
+.input-group input {
   width: 100%;
   padding: 0.5rem;
-  margin-bottom: 0.5rem;
   background: var(--panel-bg);
   border: 1px solid var(--border);
   color: var(--fg);
   border-radius: 4px;
+}
+
+.input-group.has-lens input {
+  border-radius: 4px 4px 0 0;
+  border-bottom: none;
+}
+
+.input-lens-strip {
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  padding: 0.45rem 0.6rem;
+  background: var(--panel-bg);
 }
 
 .attempt-form button {
@@ -211,15 +227,6 @@ body {
   color: var(--accent-fg);
   border-radius: 4px;
   cursor: pointer;
-}
-
-.lens-result {
-  margin-top: 1rem;
-}
-
-.lens-result-label {
-  color: var(--muted-fg);
-  font-size: 0.9rem;
 }
 
 .lens-wrapper {
@@ -261,21 +268,67 @@ body {
   font-size: 0.9rem;
 }
 
-.lens-hint {
-  font-size: 0.75rem;
-  color: var(--muted-fg);
-  margin-top: 0.35rem;
-}
-
 .success-heading {
   color: var(--success-fg);
 }
 
-.flow-diagram {
+.flow-stepper {
   margin-top: 1rem;
+}
+
+.flow-progress {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.flow-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--muted-fg);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.flow-dot.done {
+  background: var(--success-border);
+  border-color: var(--success-border);
+  color: white;
+}
+
+.flow-dot.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.flow-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.flow-controls button {
+  padding: 0.4rem 0.9rem;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.flow-controls button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.flow-step-count {
+  font-size: 0.85rem;
+  color: var(--muted-fg);
 }
 
 .flow-node {
@@ -305,13 +358,6 @@ body {
   font-size: 0.85rem;
   color: var(--note-fg);
   margin-top: 0.4rem;
-}
-
-.flow-arrow {
-  text-align: center;
-  color: var(--success-border);
-  font-size: 1.2rem;
-  line-height: 1.4rem;
 }
 
 .lens-stepper {

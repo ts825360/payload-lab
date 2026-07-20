@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchLabs, attemptLab } from "./api.js";
 import AttemptResultView from "./AttemptResultView.jsx";
+import LensUnderline from "./LensUnderline.jsx";
 import Sidebar from "./Sidebar.jsx";
 
 export const CATEGORIES = [
@@ -106,16 +107,32 @@ export default function App() {
 
           {selectedCategory && activeLab && (
             <div>
-              <h2>{activeLab.name}</h2>
+              <h2>{activeCategory.label}</h2>
               <form className="attempt-form" onSubmit={submitAttempt}>
-                <input
-                  placeholder={activeCategory.placeholder}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                />
+                <div className={"input-group" + (result && !result.success ? " has-lens" : "")}>
+                  <input
+                    placeholder={activeCategory.placeholder}
+                    value={inputValue}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                      if (result) setResult(null);
+                    }}
+                  />
+                  {result && !result.success && (
+                    <div className="input-lens-strip">
+                      <LensUnderline
+                        payloadText={String(submittedValue)}
+                        message={result.lens_message}
+                        steps={result.lens_steps}
+                      />
+                    </div>
+                  )}
+                </div>
                 <button type="submit">시도</button>
               </form>
-              {result && <AttemptResultView result={result} submittedValue={submittedValue} />}
+              {result && result.success && (
+                <AttemptResultView result={result} submittedValue={submittedValue} />
+              )}
             </div>
           )}
         </main>
