@@ -28,13 +28,15 @@ export default function Sidebar({
               key={d}
               className={d === difficulty ? "active" : ""}
               disabled={!isDifficultyAvailable(d)}
-              title={!isDifficultyAvailable(d) ? "아직 구현되지 않았습니다" : undefined}
               onClick={() => onSelectDifficulty(d)}
             >
               {d === "easy" ? "Easy" : "Medium"}
             </button>
           ))}
         </div>
+        {!isDifficultyAvailable("medium") && (
+          <div className="difficulty-note">Medium은 아직 준비되지 않았습니다</div>
+        )}
       </div>
     </aside>
   );
