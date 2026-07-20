@@ -198,8 +198,15 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.input-group input {
-  width: 100%;
+.input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.input-row input {
+  flex: 1;
+  min-width: 0;
   padding: 0.5rem;
   background: var(--panel-bg);
   border: 1px solid var(--border);
@@ -207,71 +214,31 @@ body {
   border-radius: 4px;
 }
 
-.input-as-lens {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0.5rem;
-  background: var(--panel-bg);
-  border: 1px solid var(--fail-border);
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.edit-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  opacity: 0.6;
-  flex-shrink: 0;
-  margin-left: 0.5rem;
-}
-
-.edit-icon:hover {
-  opacity: 1;
-}
-
-.attempt-form button {
-  padding: 0.5rem 1rem;
-  background: var(--accent);
-  border: none;
-  color: var(--accent-fg);
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.lens-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-.lens-underline {
+.input-row input.input-failed {
+  border-color: var(--fail-border);
   text-decoration: underline wavy var(--fail-border);
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
-  cursor: pointer;
-  font-family: ui-monospace, monospace;
 }
 
-.lens-underline:hover {
+.lens-reveal-btn {
+  flex-shrink: 0;
+  padding: 0.5rem 0.75rem;
   background: var(--fail-bg);
+  border: 1px solid var(--fail-border);
+  color: var(--fail-fg);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
-.lens-popover {
-  position: absolute;
-  top: 100%;
-  left: 0;
+.lens-popover-inline {
   margin-top: 0.5rem;
-  min-width: 280px;
-  max-width: 420px;
   background: var(--panel-bg);
   border: 1px solid var(--fail-border);
   border-radius: 6px;
   padding: 0.75rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-  z-index: 10;
 }
 
 .lens-message {
@@ -279,6 +246,16 @@ body {
   font-weight: 600;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
+}
+
+.attempt-form button[type="submit"] {
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  border: none;
+  color: var(--accent-fg);
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
 }
 
 .success-heading {
@@ -289,33 +266,63 @@ body {
   margin-top: 1rem;
 }
 
-.flow-tabs {
+.flow-pipeline {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  align-items: center;
+  gap: 0.15rem;
   margin-bottom: 0.75rem;
 }
 
-.flow-tab {
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
+.flow-pipeline-item {
+  display: flex;
+  align-items: center;
+}
+
+.flow-node-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--panel-bg);
   color: var(--muted-fg);
-  font-size: 0.8rem;
   cursor: pointer;
 }
 
-.flow-tab.done {
+.flow-icon {
+  font-size: 1.1rem;
+}
+
+.flow-node-label {
+  font-size: 0.7rem;
+}
+
+.flow-node-btn.done {
   border-color: var(--success-border);
   color: var(--success-border);
 }
 
-.flow-tab.active {
+.flow-node-btn.active {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-fg);
-  font-weight: 600;
+}
+
+.flow-arrow-inline {
+  color: var(--muted-fg);
+  padding: 0 0.15rem;
+  font-size: 0.9rem;
+}
+
+.payload-highlight {
+  background: var(--accent);
+  color: var(--accent-fg);
+  padding: 0 3px;
+  border-radius: 3px;
+  font-weight: 700;
 }
 
 .flow-controls {

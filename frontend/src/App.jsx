@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { fetchLabs, attemptLab } from "./api.js";
 import AttemptResultView from "./AttemptResultView.jsx";
-import LensUnderline from "./LensUnderline.jsx";
+import LensInput from "./LensInput.jsx";
 import Sidebar from "./Sidebar.jsx";
 
 export const CATEGORIES = [
@@ -110,33 +110,17 @@ export default function App() {
               <h2>{activeCategory.label}</h2>
               <form className="attempt-form" onSubmit={submitAttempt}>
                 <div className="input-group">
-                  {result && !result.success ? (
-                    <div className="input-as-lens">
-                      <LensUnderline
-                        payloadText={String(submittedValue)}
-                        message={result.lens_message}
-                        steps={result.lens_steps}
-                      />
-                      <button
-                        type="button"
-                        className="edit-icon"
-                        title="다시 입력하기"
-                        onClick={() => setResult(null)}
-                      >
-                        ✏️
-                      </button>
-                    </div>
-                  ) : (
-                    <input
-                      placeholder={activeCategory.placeholder}
-                      value={inputValue}
-                      onChange={(e) => {
-                        setInputValue(e.target.value);
-                        if (result) setResult(null);
-                      }}
-                      autoFocus
-                    />
-                  )}
+                  <LensInput
+                    value={inputValue}
+                    onChange={(e) => {
+                      setInputValue(e.target.value);
+                      if (result) setResult(null);
+                    }}
+                    placeholder={activeCategory.placeholder}
+                    failed={Boolean(result && !result.success)}
+                    lensMessage={result?.lens_message}
+                    lensSteps={result?.lens_steps}
+                  />
                 </div>
                 <button type="submit">시도</button>
               </form>
