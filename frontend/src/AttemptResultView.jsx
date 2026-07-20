@@ -1,4 +1,6 @@
-export default function AttemptResultView({ result }) {
+import LensUnderline from "./LensUnderline.jsx";
+
+export default function AttemptResultView({ result, submittedValue }) {
   if (result.success) {
     return (
       <div className="result-success">
@@ -15,17 +17,14 @@ export default function AttemptResultView({ result }) {
   }
 
   return (
-    <div className="result-fail">
-      <strong>실패: {result.lens_message}</strong>
-      {result.lens_checklist && (
-        <div style={{ marginTop: "0.75rem" }}>
-          {result.lens_checklist.map((line, i) => (
-            <div className="checklist-item" key={i}>
-              {line}
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="lens-result">
+      <span className="lens-result-label">제출한 값: </span>
+      <LensUnderline
+        payloadText={String(submittedValue)}
+        message={result.lens_message}
+        checklist={result.lens_checklist}
+      />
+      <div className="lens-hint">밑줄 친 부분을 클릭(또는 마우스를 올려)하면 이유를 볼 수 있습니다.</div>
     </div>
   );
 }

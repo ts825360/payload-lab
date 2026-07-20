@@ -213,18 +213,67 @@ body {
   cursor: pointer;
 }
 
-.result-success,
-.result-fail {
+.result-success {
   border-radius: 6px;
   padding: 1rem;
   margin-top: 1rem;
-  border: 1px solid;
-}
-
-.result-success {
-  border-color: var(--success-border);
+  border: 1px solid var(--success-border);
   background: var(--success-bg);
   color: var(--success-fg);
+}
+
+.lens-result {
+  margin-top: 1rem;
+}
+
+.lens-result-label {
+  color: var(--muted-fg);
+  font-size: 0.9rem;
+}
+
+.lens-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.lens-underline {
+  text-decoration: underline wavy var(--fail-border);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  font-family: ui-monospace, monospace;
+}
+
+.lens-underline:hover {
+  background: var(--fail-bg);
+}
+
+.lens-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 0.5rem;
+  min-width: 280px;
+  max-width: 420px;
+  background: var(--panel-bg);
+  border: 1px solid var(--fail-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  z-index: 10;
+}
+
+.lens-message {
+  color: var(--fail-fg);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.lens-hint {
+  font-size: 0.75rem;
+  color: var(--muted-fg);
+  margin-top: 0.35rem;
 }
 
 .result-fail {

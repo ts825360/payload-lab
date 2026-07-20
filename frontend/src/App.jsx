@@ -20,6 +20,7 @@ export default function App() {
   const [difficulty, setDifficulty] = useState("easy");
   const [inputValue, setInputValue] = useState("");
   const [result, setResult] = useState(null);
+  const [submittedValue, setSubmittedValue] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function App() {
   function resetAttempt() {
     setInputValue("");
     setResult(null);
+    setSubmittedValue(null);
     setError(null);
   }
 
@@ -62,6 +64,7 @@ export default function App() {
     try {
       const res = await attemptLab(activeLab.id, { [activeCategory.field]: value });
       setResult(res);
+      setSubmittedValue(inputValue);
     } catch (err) {
       setError(err.message);
     }
@@ -112,7 +115,7 @@ export default function App() {
                 />
                 <button type="submit">시도</button>
               </form>
-              {result && <AttemptResultView result={result} />}
+              {result && <AttemptResultView result={result} submittedValue={submittedValue} />}
             </div>
           )}
         </main>
