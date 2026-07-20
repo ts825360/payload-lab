@@ -125,7 +125,13 @@ export default function App() {
                 <button type="submit">시도</button>
               </form>
               {result && result.success && (
-                <AttemptResultView result={result} submittedValue={submittedValue} />
+                <AttemptResultView
+                  key={submittedValue}
+                  result={result}
+                  submittedValue={submittedValue}
+                  labId={activeLab.id}
+                  category={activeCategory.id}
+                />
               )}
             </div>
           )}

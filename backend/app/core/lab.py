@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable, Literal, Optional
 
 from pydantic import BaseModel
@@ -21,6 +21,24 @@ class VisualizationStep(BaseModel):
     note: Optional[str] = None
 
 
+class VariableState(BaseModel):
+    name: str
+    value: str
+    highlight: Optional[str] = None
+
+
+class TableState(BaseModel):
+    name: str
+    columns: list[str]
+    rows: list[list[str]]
+    matched_row_indices: list[int] = []
+
+
+class ServerState(BaseModel):
+    variables: list[VariableState]
+    table: Optional[TableState] = None
+
+
 class LabMetadata(BaseModel):
     id: str
     name: str
@@ -34,9 +52,17 @@ class LensStep(BaseModel):
     description: str
 
 
+class SuccessDetail(BaseModel):
+    visualization: list[VisualizationStep]
+    server_state: Optional[ServerState] = None
+    code_snippet: Optional[str] = None
+
+
 class AttemptResult(BaseModel):
     success: bool
     visualization: Optional[list[VisualizationStep]] = None
+    server_state: Optional[ServerState] = None
+    code_snippet: Optional[str] = None
     lens_message: Optional[str] = None
     lens_rule_id: Optional[str] = None
     lens_passed_count: int = 0
@@ -52,16 +78,28 @@ class Lab:
     reports failure (see issue #6: this is where the real fallback lives —
     a rule's `check()` raising on malformed input, not "no rule matched",
     since the chain structurally always returns something).
+
+    `render` is optional: labs that can demonstrate a real browser-executed
+    exploit (e.g. reflected XSS) provide a function that returns a full raw
+    HTML document for a given payload, served through GET /labs/{id}/render
+    and loaded in a sandboxed iframe by the frontend — a real navigation, so
+    <script> tags in it actually execute, unlike injecting into React's DOM.
     """
 
     metadata: LabMetadata
     rules: list[RuleCheck]
-    resolve: Callable[[Any], tuple[bool, Optional[list[VisualizationStep]]]]
+    resolve: Callable[[Any], tuple[bool, Optional[SuccessDetail]]]
+    render: Optional[Callable[[Any], str]] = None
 
     def attempt(self, payload: Any) -> AttemptResult:
-        success, visualization = self.resolve(payload)
+        success, detail = self.resolve(payload)
         if success:
-            return AttemptResult(success=True, visualization=visualization)
+            return AttemptResult(
+                success=True,
+                visualization=detail.visualization,
+                server_state=detail.server_state,
+                code_snippet=detail.code_snippet,
+            )
         return self._diagnose(payload)
 
     def _diagnose(self, payload: Any) -> AttemptResult:

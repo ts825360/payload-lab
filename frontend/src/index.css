@@ -262,61 +262,6 @@ body {
   color: var(--success-fg);
 }
 
-.flow-stepper {
-  margin-top: 1rem;
-}
-
-.flow-pipeline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.15rem;
-  margin-bottom: 0.75rem;
-}
-
-.flow-pipeline-item {
-  display: flex;
-  align-items: center;
-}
-
-.flow-node-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--panel-bg);
-  color: var(--muted-fg);
-  cursor: pointer;
-}
-
-.flow-icon {
-  font-size: 1.1rem;
-}
-
-.flow-node-label {
-  font-size: 0.7rem;
-}
-
-.flow-node-btn.done {
-  border-color: var(--success-border);
-  color: var(--success-border);
-}
-
-.flow-node-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-fg);
-}
-
-.flow-arrow-inline {
-  color: var(--muted-fg);
-  padding: 0 0.15rem;
-  font-size: 0.9rem;
-}
-
 .payload-highlight {
   background: var(--accent);
   color: var(--accent-fg);
@@ -325,59 +270,163 @@ body {
   font-weight: 700;
 }
 
-.flow-controls {
+/* View tabs: 서버 상태 / 코드 / 실행 결과 / 처리 흐름 — 선택해서 보는 구조 */
+
+.view-tabs {
   display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 0.75rem;
+  gap: 0.4rem;
+  margin-top: 1rem;
+  margin-bottom: 0.75rem;
 }
 
-.flow-controls button {
+.view-tab {
   padding: 0.4rem 0.9rem;
-  background: var(--panel-bg);
+  border-radius: 6px 6px 0 0;
   border: 1px solid var(--border);
-  color: var(--fg);
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.flow-controls button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.flow-step-count {
-  font-size: 0.85rem;
+  border-bottom: none;
+  background: var(--sidebar-bg);
   color: var(--muted-fg);
+  cursor: pointer;
+  font-size: 0.85rem;
 }
 
-.flow-node {
-  border: 1px solid var(--success-border);
-  background: var(--success-bg);
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-}
-
-.flow-node .label {
+.view-tab.active {
+  background: var(--panel-bg);
+  color: var(--fg);
   font-weight: 600;
-  font-size: 0.8rem;
+  border-color: var(--accent);
+}
+
+.view-panel {
+  border: 1px solid var(--border);
+  border-radius: 0 8px 8px 8px;
+  background: var(--panel-bg);
+  padding: 1rem;
+}
+
+/* 서버 상태: Python Tutor 식 변수 -> 값/테이블 참조 다이어그램 */
+
+.state-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.state-col-title {
+  font-size: 0.75rem;
   color: var(--muted-fg);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
 }
 
-.flow-node .value {
+.state-var-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.state-var-name {
+  color: var(--accent);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.state-arrow {
+  color: var(--muted-fg);
+}
+
+.state-var-value {
+  word-break: break-all;
+}
+
+.state-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.85rem;
+}
+
+.state-table th,
+.state-table td {
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  font-family: ui-monospace, monospace;
+}
+
+.state-table th {
+  background: var(--sidebar-bg);
+  color: var(--muted-fg);
+  font-weight: 600;
+}
+
+.state-table tr.matched td {
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 700;
+}
+
+.state-hint {
+  font-size: 0.75rem;
+  color: var(--muted-fg);
+  margin-top: 0.4rem;
+}
+
+/* 코드 뷰 */
+
+.code-view {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: var(--sidebar-bg);
+  border-radius: 6px;
   font-family: ui-monospace, monospace;
   font-size: 0.85rem;
+  white-space: pre-wrap;
   word-break: break-all;
-  color: var(--success-fg);
-  margin-top: 0.25rem;
 }
 
-.flow-node .note {
+/* 실행 결과: 실제로 파싱/실행되는 iframe */
+
+.live-hint {
+  font-size: 0.8rem;
+  color: var(--muted-fg);
+  margin-bottom: 0.5rem;
+}
+
+.live-frame {
+  width: 100%;
+  height: 220px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+}
+
+/* 처리 흐름: 있는 그대로의 텍스트 서술, 다이어그램인 척하지 않음 */
+
+.process-narrative {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.narrative-label {
+  color: var(--muted-fg);
+  font-weight: 600;
+}
+
+.narrative-value {
+  font-family: ui-monospace, monospace;
+  word-break: break-all;
+}
+
+.note {
   font-size: 0.85rem;
   color: var(--note-fg);
-  margin-top: 0.4rem;
+  margin-top: 0.25rem;
 }
 
 .lens-stepper {

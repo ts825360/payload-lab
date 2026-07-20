@@ -1,7 +1,16 @@
 import sqlite3
 from typing import Optional
 
-from app.core.lab import AttemptResult, Lab, LabMetadata, RuleCheck, VisualizationStep
+from app.core.lab import (
+    Lab,
+    LabMetadata,
+    RuleCheck,
+    ServerState,
+    SuccessDetail,
+    TableState,
+    VariableState,
+    VisualizationStep,
+)
 
 # 실제 취약한 로그인 조회를 흉내내기 위해, 매 시도마다 :memory: SQLite DB를
 # 새로 만들고 시드 데이터를 넣습니다. 진짜 쿼리 실행 결과로 성공/실패를
@@ -37,12 +46,20 @@ def _run_login_query(username: str) -> tuple[bool, str, list[tuple]]:
     return bool(rows), query, rows
 
 
-def _resolve(payload: dict) -> tuple[bool, Optional[list[VisualizationStep]]]:
+_CODE_SNIPPET = (
+    "query = f\"SELECT * FROM users WHERE username = '{username}' \"\n"
+    "        \"AND password = '{password}'\"\n"
+    "rows = conn.execute(query).fetchall()"
+)
+
+
+def _resolve(payload: dict) -> tuple[bool, Optional[SuccessDetail]]:
     username = payload.get("username", "")
     success, query, rows = _run_login_query(username)
     if not success:
         return False, None
-    return True, [
+
+    visualization = [
         VisualizationStep(step="input", label="사용자 입력값", value=username),
         VisualizationStep(
             step="request", label="요청 또는 브라우저 이벤트",
@@ -53,19 +70,30 @@ def _resolve(payload: dict) -> tuple[bool, Optional[list[VisualizationStep]]]:
             value="로그인 라우터가 username을 그대로 받아 인증용 SQL 쿼리 문자열을 조립",
         ),
         VisualizationStep(
-            step="transformation", label="취약한 변환",
-            value=query,
-            note="여기서 따옴표가 문자열을 탈출시키고, OR 조건이 비밀번호 검사를 항상 참으로 만들었습니다.",
-        ),
-        VisualizationStep(
             step="result", label="공격 성공 결과",
             value=f"비밀번호 몰라도 로그인 성공, 반환된 행: {rows}",
         ),
-        VisualizationStep(
-            step="vulnerable_code", label="취약 코드 핵심 줄",
-            value='query = f"SELECT * FROM users WHERE username = \'{username}\' AND password = \'{password}\'"',
-        ),
     ]
+
+    matched_indices = [i for i, u in enumerate(_SEED_USERS) if u in rows]
+    server_state = ServerState(
+        variables=[
+            VariableState(name="username", value=username, highlight=username),
+            VariableState(name="query", value=query, highlight=username),
+        ],
+        table=TableState(
+            name="users",
+            columns=["id", "username", "password"],
+            rows=[[str(u[0]), u[1], u[2]] for u in _SEED_USERS],
+            matched_row_indices=matched_indices,
+        ),
+    )
+
+    return True, SuccessDetail(
+        visualization=visualization,
+        server_state=server_state,
+        code_snippet=_CODE_SNIPPET,
+    )
 
 
 def _has_quote_escape(payload: dict) -> bool:
