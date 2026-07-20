@@ -29,13 +29,18 @@ class LabMetadata(BaseModel):
     route: str
 
 
+class LensStep(BaseModel):
+    status: Literal["passed", "failed", "unknown"]
+    description: str
+
+
 class AttemptResult(BaseModel):
     success: bool
     visualization: Optional[list[VisualizationStep]] = None
     lens_message: Optional[str] = None
     lens_rule_id: Optional[str] = None
     lens_passed_count: int = 0
-    lens_checklist: Optional[list[str]] = None
+    lens_steps: Optional[list[LensStep]] = None
 
 
 @dataclass
@@ -69,7 +74,7 @@ class Lab:
                     lens_message="입력을 인식하지 못했습니다. 이 랩이 기대하는 입력 형태를 확인해보세요.",
                     lens_rule_id="fallback_unrecognized_input",
                     lens_passed_count=i,
-                    lens_checklist=self._checklist(i),
+                    lens_steps=self._lens_steps(i),
                 )
             if not passed:
                 return AttemptResult(
@@ -77,7 +82,7 @@ class Lab:
                     lens_message=rule.description,
                     lens_rule_id=rule.id,
                     lens_passed_count=i,
-                    lens_checklist=self._checklist(i),
+                    lens_steps=self._lens_steps(i),
                 )
         # every rule passed but resolve() still said failure: shouldn't
         # normally happen, but don't crash — surface it plainly.
@@ -86,12 +91,17 @@ class Lab:
             lens_message="모든 조건은 충족했지만 공격이 최종적으로 성립하지 않았습니다.",
             lens_rule_id="fallback_all_rules_passed",
             lens_passed_count=len(self.rules),
-            lens_checklist=self._checklist(len(self.rules)),
+            lens_steps=self._lens_steps(len(self.rules)),
         )
 
-    def _checklist(self, failed_index: int) -> list[str]:
-        checklist = []
+    def _lens_steps(self, failed_index: int) -> list[LensStep]:
+        steps = []
         for i, rule in enumerate(self.rules):
-            mark = "v" if i < failed_index else ("x" if i == failed_index else "?")
-            checklist.append(f"[{mark}] {rule.description}")
-        return checklist
+            if i < failed_index:
+                status = "passed"
+            elif i == failed_index:
+                status = "failed"
+            else:
+                status = "unknown"
+            steps.append(LensStep(status=status, description=rule.description))
+        return steps

@@ -3,15 +3,20 @@ import LensUnderline from "./LensUnderline.jsx";
 export default function AttemptResultView({ result, submittedValue }) {
   if (result.success) {
     return (
-      <div className="result-success">
-        <strong>성공! 공격이 통했습니다.</strong>
-        {result.visualization.map((step) => (
-          <div className="viz-step" key={step.step}>
-            <div className="label">{step.label}</div>
-            <div className="value">{step.value}</div>
-            {step.note && <div className="note">💡 {step.note}</div>}
-          </div>
-        ))}
+      <div>
+        <strong className="success-heading">성공! 공격이 통했습니다.</strong>
+        <div className="flow-diagram">
+          {result.visualization.map((step, i) => (
+            <div key={step.step}>
+              <div className="flow-node">
+                <div className="label">{step.label}</div>
+                <div className="value">{step.value}</div>
+                {step.note && <div className="note">💡 {step.note}</div>}
+              </div>
+              {i < result.visualization.length - 1 && <div className="flow-arrow">↓</div>}
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -22,7 +27,7 @@ export default function AttemptResultView({ result, submittedValue }) {
       <LensUnderline
         payloadText={String(submittedValue)}
         message={result.lens_message}
-        checklist={result.lens_checklist}
+        steps={result.lens_steps}
       />
       <div className="lens-hint">밑줄 친 부분을 클릭(또는 마우스를 올려)하면 이유를 볼 수 있습니다.</div>
     </div>

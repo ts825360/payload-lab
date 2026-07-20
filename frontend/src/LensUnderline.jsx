@@ -1,6 +1,8 @@
 import { useState } from "react";
 
-export default function LensUnderline({ payloadText, message, checklist }) {
+const STATUS_ICON = { passed: "✓", failed: "✕", unknown: "–" };
+
+export default function LensUnderline({ payloadText, message, steps }) {
   const [pinned, setPinned] = useState(false);
   const [hovering, setHovering] = useState(false);
   const open = pinned || hovering;
@@ -18,11 +20,12 @@ export default function LensUnderline({ payloadText, message, checklist }) {
       {open && (
         <div className="lens-popover">
           <div className="lens-message">{message}</div>
-          {checklist && checklist.length > 0 && (
-            <div className="lens-checklist">
-              {checklist.map((line, i) => (
-                <div key={i} className="checklist-item">
-                  {line}
+          {steps && steps.length > 0 && (
+            <div className="lens-stepper">
+              {steps.map((step, i) => (
+                <div className={`lens-step lens-step-${step.status}`} key={i}>
+                  <span className="dot">{STATUS_ICON[step.status]}</span>
+                  <span className="text">{step.description}</span>
                 </div>
               ))}
             </div>
