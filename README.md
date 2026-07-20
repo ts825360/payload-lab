@@ -1,4 +1,4 @@
-# attack-lens
+# PayloadLab
 
 > ⚠️ 이 프로젝트는 아직 기획/설계 교차검증 단계입니다. 실행 가능한 코드는 아직 없고, 전체 설계와 논의는 GitHub 이슈에서 진행 중입니다.
 
@@ -23,8 +23,8 @@ Lens는 VS Code의 인기 확장 프로그램 **[Error Lens](https://marketplace
 
 아직 구현 전, 기획을 교차검증하고 세부 설계를 결정하는 단계입니다. 전체 그림과 모든 설계 논의는 Issues 탭에 정리되어 있고, 아래 두 이슈가 고정(pinned)되어 있습니다.
 
-- 📌 [#12 프로젝트 비전과 전체 기획](https://github.com/ts825360/attack-lens/issues/12) — 무엇을, 왜 만드는지와 전체 설계, 그리고 하위 논의 이슈 전체 목록을 읽는 순서대로 정리
-- 📌 [#13 깃허브 사용 방법](https://github.com/ts825360/attack-lens/issues/13) — 깃허브의 이슈/브랜치/풀 리퀘스트를 처음 써보는 팀원을 위한 단계별 안내
+- 📌 [#12 프로젝트 비전과 전체 기획](https://github.com/ts825360/payload-lab/issues/12) — 무엇을, 왜 만드는지와 전체 설계, 그리고 하위 논의 이슈 전체 목록을 읽는 순서대로 정리
+- 📌 [#13 깃허브 사용 방법](https://github.com/ts825360/payload-lab/issues/13) — 깃허브의 이슈/브랜치/풀 리퀘스트를 처음 써보는 팀원을 위한 단계별 안내
 
 새로 합류한 팀원은 `#13` → `#12` 순서로 읽는 것을 권장합니다.
 
@@ -32,7 +32,7 @@ Lens는 VS Code의 인기 확장 프로그램 **[Error Lens](https://marketplace
 
 Python (FastAPI) · React · SQLite/PostgreSQL · Docker / Docker Compose
 
-(확정 사항이 아니며, 세부 결정 현황은 [#12](https://github.com/ts825360/attack-lens/issues/12)를 참고하세요.)
+(확정 사항이 아니며, 세부 결정 현황은 [#12](https://github.com/ts825360/payload-lab/issues/12)를 참고하세요.)
 
 ## 참고 자료
 
