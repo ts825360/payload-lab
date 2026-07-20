@@ -109,23 +109,33 @@ export default function App() {
             <div>
               <h2>{activeCategory.label}</h2>
               <form className="attempt-form" onSubmit={submitAttempt}>
-                <div className={"input-group" + (result && !result.success ? " has-lens" : "")}>
-                  <input
-                    placeholder={activeCategory.placeholder}
-                    value={inputValue}
-                    onChange={(e) => {
-                      setInputValue(e.target.value);
-                      if (result) setResult(null);
-                    }}
-                  />
-                  {result && !result.success && (
-                    <div className="input-lens-strip">
+                <div className="input-group">
+                  {result && !result.success ? (
+                    <div className="input-as-lens">
                       <LensUnderline
                         payloadText={String(submittedValue)}
                         message={result.lens_message}
                         steps={result.lens_steps}
                       />
+                      <button
+                        type="button"
+                        className="edit-icon"
+                        title="다시 입력하기"
+                        onClick={() => setResult(null)}
+                      >
+                        ✏️
+                      </button>
                     </div>
+                  ) : (
+                    <input
+                      placeholder={activeCategory.placeholder}
+                      value={inputValue}
+                      onChange={(e) => {
+                        setInputValue(e.target.value);
+                        if (result) setResult(null);
+                      }}
+                      autoFocus
+                    />
                   )}
                 </div>
                 <button type="submit">시도</button>

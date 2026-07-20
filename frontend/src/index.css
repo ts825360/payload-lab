@@ -207,17 +207,30 @@ body {
   border-radius: 4px;
 }
 
-.input-group.has-lens input {
-  border-radius: 4px 4px 0 0;
-  border-bottom: none;
+.input-as-lens {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.5rem;
+  background: var(--panel-bg);
+  border: 1px solid var(--fail-border);
+  border-radius: 4px;
+  box-sizing: border-box;
 }
 
-.input-lens-strip {
-  border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 4px 4px;
-  padding: 0.45rem 0.6rem;
-  background: var(--panel-bg);
+.edit-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  opacity: 0.6;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.edit-icon:hover {
+  opacity: 1;
 }
 
 .attempt-form button {
@@ -276,33 +289,33 @@ body {
   margin-top: 1rem;
 }
 
-.flow-progress {
+.flow-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
   margin-bottom: 0.75rem;
 }
 
-.flow-dot {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+.flow-tab {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--panel-bg);
   color: var(--muted-fg);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   cursor: pointer;
 }
 
-.flow-dot.done {
-  background: var(--success-border);
+.flow-tab.done {
   border-color: var(--success-border);
-  color: white;
+  color: var(--success-border);
 }
 
-.flow-dot.active {
+.flow-tab.active {
+  background: var(--accent);
   border-color: var(--accent);
-  color: var(--accent);
-  font-weight: 700;
+  color: var(--accent-fg);
+  font-weight: 600;
 }
 
 .flow-controls {
