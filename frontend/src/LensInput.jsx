@@ -17,7 +17,7 @@ export default function LensInput({ value, onChange, placeholder, failed, lensMe
         />
         {failed && (
           <button type="button" className="lens-reveal-btn" onClick={() => setPinned((p) => !p)}>
-            🔍 왜 실패했나요?
+            왜 실패했나요?
           </button>
         )}
       </div>
