@@ -204,6 +204,26 @@ body {
   margin-bottom: 0.5rem;
 }
 
+.extra-field {
+  margin-bottom: 0.5rem;
+}
+
+.extra-field-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--muted-fg);
+  margin-bottom: 0.25rem;
+}
+
+.extra-field input {
+  width: 100%;
+  padding: 0.5rem;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 4px;
+}
+
 .input-row {
   display: flex;
   gap: 0.5rem;

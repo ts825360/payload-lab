@@ -5,9 +5,28 @@ import LensInput from "./LensInput.jsx";
 import Sidebar from "./Sidebar.jsx";
 
 export const CATEGORIES = [
-  { id: "sql_injection", label: "SQL Injection", field: "username", placeholder: "admin' OR '1'='1' --" },
-  { id: "reflected_xss", label: "Reflected XSS", field: "query", placeholder: "<script>alert(1)</script>" },
-  { id: "idor", label: "IDOR", field: "requested_id", placeholder: "1043", numeric: true },
+  {
+    id: "sql_injection",
+    label: "SQL Injection",
+    field: "username",
+    placeholder: { easy: "admin' OR '1'='1' --", medium: "admin' oR '1'='1' --" },
+  },
+  {
+    id: "reflected_xss",
+    label: "Reflected XSS",
+    field: "query",
+    placeholder: { easy: "<script>alert(1)</script>", medium: "<ScRiPt>alert(1)</script>" },
+  },
+  {
+    id: "idor",
+    label: "IDOR",
+    field: "requested_id",
+    numeric: true,
+    placeholder: { easy: "1043", medium: "1043" },
+    extraFields: {
+      medium: [{ name: "claimed_user_id", label: "claimed_user_id (소유자로 위장)", placeholder: "2001", numeric: true }],
+    },
+  },
 ];
 
 function labId(categoryId, difficulty) {
@@ -20,6 +39,7 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [difficulty, setDifficulty] = useState("easy");
   const [inputValue, setInputValue] = useState("");
+  const [extraValues, setExtraValues] = useState({});
   const [result, setResult] = useState(null);
   const [submittedValue, setSubmittedValue] = useState(null);
   const [error, setError] = useState(null);
@@ -37,6 +57,7 @@ export default function App() {
 
   function resetAttempt() {
     setInputValue("");
+    setExtraValues({});
     setResult(null);
     setSubmittedValue(null);
     setError(null);
@@ -58,12 +79,18 @@ export default function App() {
 
   const activeCategory = CATEGORIES.find((c) => c.id === selectedCategory);
   const activeLab = selectedCategory ? labsById[labId(selectedCategory, difficulty)] : null;
+  const extraFields = activeCategory?.extraFields?.[difficulty] || [];
 
   async function submitAttempt(e) {
     e.preventDefault();
     const value = activeCategory.numeric ? Number(inputValue) : inputValue;
+    const payload = { [activeCategory.field]: value };
+    for (const f of extraFields) {
+      const raw = extraValues[f.name] ?? "";
+      payload[f.name] = f.numeric ? Number(raw) : raw;
+    }
     try {
-      const res = await attemptLab(activeLab.id, { [activeCategory.field]: value });
+      const res = await attemptLab(activeLab.id, payload);
       setResult(res);
       setSubmittedValue(inputValue);
     } catch (err) {
@@ -116,12 +143,27 @@ export default function App() {
                       setInputValue(e.target.value);
                       if (result) setResult(null);
                     }}
-                    placeholder={activeCategory.placeholder}
+                    placeholder={activeCategory.placeholder[difficulty]}
                     failed={Boolean(result && !result.success)}
                     lensMessage={result?.lens_message}
                     lensSteps={result?.lens_steps}
                   />
                 </div>
+
+                {extraFields.map((f) => (
+                  <div className="extra-field" key={f.name}>
+                    <label className="extra-field-label">{f.label}</label>
+                    <input
+                      placeholder={f.placeholder}
+                      value={extraValues[f.name] ?? ""}
+                      onChange={(e) => {
+                        setExtraValues((prev) => ({ ...prev, [f.name]: e.target.value }));
+                        if (result) setResult(null);
+                      }}
+                    />
+                  </div>
+                ))}
+
                 <button type="submit">시도</button>
               </form>
               {result && result.success && (

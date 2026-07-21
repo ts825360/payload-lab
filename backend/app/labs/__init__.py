@@ -1,11 +1,18 @@
 from app.core.lab import Lab
-from app.labs.sql_injection import sql_injection_easy
-from app.labs.reflected_xss import reflected_xss_easy
-from app.labs.idor import idor_easy
+from app.labs.sql_injection import sql_injection_easy, sql_injection_medium
+from app.labs.reflected_xss import reflected_xss_easy, reflected_xss_medium
+from app.labs.idor import idor_easy, idor_medium
 
 REGISTRY: dict[str, Lab] = {
     lab.metadata.id: lab
-    for lab in [sql_injection_easy, reflected_xss_easy, idor_easy]
+    for lab in [
+        sql_injection_easy,
+        sql_injection_medium,
+        reflected_xss_easy,
+        reflected_xss_medium,
+        idor_easy,
+        idor_medium,
+    ]
 }
 
 
