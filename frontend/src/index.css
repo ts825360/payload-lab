@@ -229,6 +229,7 @@ body {
 }
 
 .input-row {
+  position: relative;
   display: flex;
   gap: 0.5rem;
   align-items: stretch;
@@ -246,15 +247,19 @@ body {
 
 .input-row input.input-failed {
   border-color: var(--fail-border);
-  padding-bottom: 9px;
-  background-color: var(--panel-bg);
-  /* text-decoration on <input> value text doesn't reliably paint in
-     Chromium, so the wavy underline is drawn as a background pattern
-     instead -- always renders regardless of browser quirks. */
+}
+
+/* 실제 타이핑한 글자 수만큼만(JS로 측정한 폭) 그려지는 밑줄 -- 박스 전체가
+   아니라 진짜 텍스트가 있는 구간에만 표시되도록 별도 레이어로 분리 */
+.underline-mark {
+  position: absolute;
+  bottom: 4px;
+  height: 4px;
+  pointer-events: none;
   background-image:
     linear-gradient(to top right, transparent 50%, var(--fail-border) 50%),
     linear-gradient(to bottom right, transparent 50%, var(--fail-border) 50%);
-  background-position: 6px bottom, 9px bottom;
+  background-position: 0 bottom, 3px bottom;
   background-size: 6px 4px, 6px 4px;
   background-repeat: repeat-x, repeat-x;
 }
