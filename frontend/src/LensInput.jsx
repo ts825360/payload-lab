@@ -11,10 +11,10 @@ function measureTextWidth(text, font) {
 }
 
 export default function LensInput({ value, onChange, placeholder, failed, lensMessage, lensSteps }) {
-  const [pinned, setPinned] = useState(false);
+  const [hovering, setHovering] = useState(false);
   const inputRef = useRef(null);
   const [mark, setMark] = useState({ left: 0, width: 0 });
-  const open = failed && pinned;
+  const open = failed && hovering;
 
   useEffect(() => {
     if (!failed || !inputRef.current) return;
@@ -39,16 +39,17 @@ export default function LensInput({ value, onChange, placeholder, failed, lensMe
           onChange={onChange}
         />
         {failed && (
-          <span className="underline-mark" style={{ left: mark.left, width: mark.width }} />
-        )}
-        {failed && (
-          <button type="button" className="lens-reveal-btn" onClick={() => setPinned((p) => !p)}>
-            왜 실패했나요?
-          </button>
+          <span
+            className="underline-mark"
+            style={{ left: mark.left, width: mark.width }}
+            onMouseEnter={() => setHovering(true)}
+            onMouseLeave={() => setHovering(false)}
+          />
         )}
       </div>
       {open && (
         <div className="lens-popover-inline">
+          <div className="lens-popover-title">왜 실패했나요?</div>
           <div className="lens-message">{lensMessage}</div>
           {lensSteps && lensSteps.length > 0 && (
             <div className="lens-stepper">
