@@ -92,7 +92,17 @@ class Lab:
     render: Optional[Callable[[Any], str]] = None
 
     def attempt(self, payload: Any) -> AttemptResult:
-        success, detail = self.resolve(payload)
+        try:
+            success, detail = self.resolve(payload)
+        except Exception:
+            # resolve() itself choked on the input (e.g. wrong type for a
+            # field) -- treat it the same as "resolve said no" and let
+            # _diagnose's per-rule exception handling take it from here,
+            # instead of a 500. This is the same #6 guarantee `_diagnose`
+            # already gives for individual rule checks, extended to cover
+            # resolve() too (found via #10's regression suite: resolve()
+            # was the one path that could still crash the request).
+            return self._diagnose(payload)
         if success:
             return AttemptResult(
                 success=True,
