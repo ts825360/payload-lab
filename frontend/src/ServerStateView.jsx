@@ -46,7 +46,7 @@ export default function ServerStateView({ state }) {
               ))}
             </tbody>
           </table>
-          <div className="state-hint">파란 줄 = 이 payload로 실제 매칭된 행</div>
+          <div className="state-hint">→ 강조된 줄 = 이 payload로 실제 매칭된 행</div>
         </div>
       )}
     </div>

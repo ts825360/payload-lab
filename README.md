@@ -32,6 +32,10 @@ docker compose up --build
 - 프론트엔드: http://localhost:5173
 - 백엔드 API: http://localhost:8000
 
+### 왜 로컬에서만 실행해야 하나요
+
+이건 "혹시 모르니 조심하라"는 형식적 경고가 아니라, 앱 안에 **진짜로 동작하는 공격 통로**가 있어서입니다. 대표적으로 Reflected XSS 랩의 `GET /labs/{id}/render` 엔드포인트는 쿼리스트링에 들어온 값을 이스케이프 없이 그대로 HTML로 되돌려주는 **실제 reflected XSS**입니다. 앱 안에서는 이 결과를 `allow-same-origin` 없는 sandbox iframe에 가두지만, 누군가 이 URL을 브라우저 주소창에 직접 열면 백엔드 오리진에서 아무 격리 없이 스크립트가 실행됩니다. 그래서 이 서버를 공개 네트워크에 띄우면 실습용 취약점이 그대로 남에게 열린 취약점이 됩니다 — 반드시 로컬에서만 실행하세요.
+
 ## 기술 스택
 
 Python (FastAPI) · React (Vite) · SQLite · Docker / Docker Compose

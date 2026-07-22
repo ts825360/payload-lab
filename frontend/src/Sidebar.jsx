@@ -8,25 +8,29 @@ export default function Sidebar({
 }) {
   return (
     <aside className="sidebar">
-      <nav className="lab-nav">
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            className={c.id === selectedCategory ? "active" : ""}
-            onClick={() => onSelectCategory(c.id)}
-          >
-            {c.label}
-          </button>
-        ))}
-      </nav>
+      <div className="sidebar-section">
+        <div className="sidebar-heading">공격 유형</div>
+        <nav className="lab-nav">
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              className={"lab-nav-item" + (c.id === selectedCategory ? " active" : "")}
+              onClick={() => onSelectCategory(c.id)}
+            >
+              <span className="lab-nav-label">{c.label}</span>
+              <span className="lab-nav-tag">{c.tag}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
 
-      <div className="difficulty-selector">
-        <div className="difficulty-label">난이도</div>
-        <div className="difficulty-buttons">
+      <div className="sidebar-section difficulty-selector">
+        <div className="sidebar-heading">난이도</div>
+        <div className="segmented">
           {["easy", "medium"].map((d) => (
             <button
               key={d}
-              className={d === difficulty ? "active" : ""}
+              className={"segmented-btn" + (d === difficulty ? " active" : "")}
               disabled={!isDifficultyAvailable(d)}
               onClick={() => onSelectDifficulty(d)}
             >
@@ -35,7 +39,7 @@ export default function Sidebar({
           ))}
         </div>
         {!isDifficultyAvailable("medium") && (
-          <div className="difficulty-note">Medium은 아직 준비되지 않았습니다</div>
+          <p className="difficulty-note">Medium은 아직 준비되지 않았습니다</p>
         )}
       </div>
     </aside>
