@@ -52,10 +52,103 @@ class LensStep(BaseModel):
     description: str
 
 
+# --------------------------------------------------------------------------
+# ExecutionGraph (#19): 성공 시, "서버상태/코드/처리흐름" 3탭을 대체하는 단일
+# 관계 그래프. 매 시도의 실제 값으로 채워진다(오라클은 그대로, 그래프는 서술).
+#
+# 상호 하이라이트는 "공유 group id" 한 가지로 구현한다: payload 조각이 group을
+# 정의하고(id == group), 다이어그램의 span/행/코드 조각이 같은 group을 달면,
+# 어느 쪽에 hover/focus해도 같은 group 전체가 켜진다(양방향이 구조적으로 보장).
+#
+# shape="derivation": 문자열이 단계별로 변형되는 유도 과정(SQLi/XSS/CmdInj/Path).
+# shape="relational": 객체가 화살표로 연결되는 관계 스냅샷(IDOR). -- 이후 확장.
+# --------------------------------------------------------------------------
+
+
+class GraphSegment(BaseModel):
+    """페이로드를 의미 단위로 쪼갠 조각. id가 곧 하이라이트 group."""
+
+    id: str
+    text: str
+    role: str = ""  # breakout|logic|comment|injected|benign
+
+
+class DerivSpan(BaseModel):
+    """유도 과정의 한 문자열 단계를 이루는 span. group으로 payload/코드와 연결."""
+
+    text: str
+    group: str = ""
+    style: str = ""  # taint|danger|comment|muted|slot
+
+
+class Condition(BaseModel):
+    text: str
+    group: str = ""
+    result: str = ""  # 참|거짓|확인 필요
+
+
+class GraphTableRow(BaseModel):
+    cells: list[str]
+    matched: bool = False
+
+
+class CodeSpan(BaseModel):
+    text: str
+    group: str = ""
+
+
+class RelObject(BaseModel):
+    """관계 그래프(IDOR)의 객체 노드. tone으로 내 것/남의 것/없음을 색으로 구분."""
+
+    id: str
+    title: str
+    subtitle: str = ""
+    tone: str = ""  # mine|other|missing|neutral
+
+
+class RelArrow(BaseModel):
+    """객체 사이의 관계 화살표(예: 주문 → 주인)."""
+
+    source: str
+    target: str
+    label: str = ""
+    tone: str = ""  # mine|other
+
+
+class DerivStep(BaseModel):
+    id: str
+    # derivation: query|split|table|verdict|boundary|live|note
+    # relational: note|relations|verdict
+    kind: str
+    label: str = ""
+    note: str = ""
+    style: str = ""  # note용: "missing" 이면 점선 유령 박스
+    side: str = ""  # server|browser (경계 레이아웃 힌트)
+    spans: list[DerivSpan] = []  # kind=query
+    conditions: list[Condition] = []  # kind=split
+    op: str = ""  # kind=split (예: "OR")
+    columns: list[str] = []  # kind=table
+    rows: list[GraphTableRow] = []  # kind=table
+    objects: list[RelObject] = []  # kind=relations
+    arrows: list[RelArrow] = []  # kind=relations
+    status: str = ""  # kind=verdict: success|blocked
+    text: str = ""  # kind=verdict 문구
+
+
+class ExecutionGraph(BaseModel):
+    attack: str
+    shape: str = "derivation"
+    payload_segments: list[GraphSegment] = []
+    code_caption: str = ""
+    code: list[CodeSpan] = []
+    steps: list[DerivStep] = []
+
+
 class SuccessDetail(BaseModel):
     visualization: list[VisualizationStep]
     server_state: Optional[ServerState] = None
     code_snippet: Optional[str] = None
+    execution_graph: Optional[ExecutionGraph] = None
 
 
 class AttemptResult(BaseModel):
@@ -63,6 +156,7 @@ class AttemptResult(BaseModel):
     visualization: Optional[list[VisualizationStep]] = None
     server_state: Optional[ServerState] = None
     code_snippet: Optional[str] = None
+    execution_graph: Optional[ExecutionGraph] = None
     lens_message: Optional[str] = None
     lens_rule_id: Optional[str] = None
     lens_passed_count: int = 0
@@ -109,6 +203,7 @@ class Lab:
                 visualization=detail.visualization,
                 server_state=detail.server_state,
                 code_snippet=detail.code_snippet,
+                execution_graph=detail.execution_graph,
             )
         return self._diagnose(payload)
 

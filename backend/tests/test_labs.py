@@ -84,6 +84,35 @@ def test_sqli_medium_fails_at_comment_terminator():
     assert result.lens_passed_count == 3
 
 
+# ---- #19 ExecutionGraph: 성공 시 실제 데이터로 채워진 유도 과정을 낸다 ----
+
+def test_sqli_easy_success_builds_execution_graph():
+    result = sql_injection.sql_injection_easy.attempt({"username": "admin' OR '1'='1' --"})
+    g = result.execution_graph
+    assert g is not None and g.shape == "derivation"
+    # 페이로드가 조각으로 쪼개졌는지
+    seg_ids = {s.id for s in g.payload_segments}
+    assert {"quote", "logic", "comment"} <= seg_ids
+    # 실제 반환된 행이 table 단계에 matched로 반영됐는지 (admin' OR ... -- 는 모든 행)
+    table = next(s for s in g.steps if s.kind == "table")
+    assert sum(1 for r in table.rows if r.matched) == 2
+    verdict = next(s for s in g.steps if s.kind == "verdict")
+    assert verdict.status == "success"
+
+
+def test_sqli_medium_graph_includes_filter_bypass_step():
+    result = sql_injection.sql_injection_medium.attempt({"username": "admin' oR '1'='1' --"})
+    assert result.success is True
+    step_ids = [s.id for s in result.execution_graph.steps]
+    assert "filter" in step_ids  # medium만의 필터 우회 단계
+
+
+def test_sqli_failure_has_no_execution_graph():
+    result = sql_injection.sql_injection_easy.attempt({"username": "admin"})
+    assert result.success is False
+    assert result.execution_graph is None
+
+
 # ---------------------------------------------------------------- Reflected XSS
 
 def test_xss_easy_success():
@@ -155,13 +184,24 @@ def test_idor_easy_malformed_input_does_not_crash():
     assert result.lens_rule_id == "fallback_unrecognized_input"
 
 
-def test_idor_easy_guessable_id_rule_is_currently_unreachable_as_a_failure():
-    """알려진 한계: _ORDERS 키가 전부 int라서, resource_exists를 통과하는
-    값은 이미 int일 수밖에 없다 -- guessable_id가 첫 실패 지점이 되는
-    입력이 존재하지 않는다. 규칙 자체는 체인에 등록돼 있는지만 확인한다."""
+def test_idor_easy_dead_guessable_rule_removed():
+    """#18 결정(C): '추측 가능한 정수 ID' 규칙은 첫 실패 지점이 될 수 있는
+    입력이 구조적으로 존재하지 않는 죽은 규칙이었다 (resource_exists를 통과하는
+    값은 이미 int일 수밖에 없음). 규칙 체인에서 제거하고, 그 교훈은 성공
+    시각화의 note로 옮겼다 (아래 test_idor_success_teaches_guessable_ids)."""
     rule_ids = [r.id for r in idor.idor_easy.rules]
-    assert "guessable_id" in rule_ids
-    assert rule_ids.index("guessable_id") == len(rule_ids) - 1
+    assert "guessable_id" not in rule_ids
+    assert rule_ids == ["different_resource", "resource_exists"]
+
+
+def test_idor_success_teaches_guessable_ids():
+    """#18: 제거한 규칙이 가르치려던 '순차/추측 가능한 ID' 개념이 성공
+    경로의 입력 단계 note로 살아남았는지 회귀 고정."""
+    result = idor.idor_easy.attempt({"requested_id": 1043})
+    assert result.success is True
+    input_step = next(s for s in result.visualization if s.step == "input")
+    assert input_step.note is not None
+    assert "추측" in input_step.note
 
 
 def test_idor_medium_success_requires_claimed_owner():
