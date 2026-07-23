@@ -126,6 +126,14 @@ def test_xss_easy_fails_at_script_open():
     assert result.lens_rule_id == "script_open"
 
 
+def test_xss_script_open_message_is_scope_honest():
+    """작동하는 다른 XSS 벡터(<img onerror> 등)를 '틀렸다'고 하지 않도록,
+    script_open 진단은 이 랩이 <script> 기법에 한정됨을 정직하게 밝혀야 한다."""
+    result = reflected_xss.reflected_xss_easy.attempt({"query": "<img src=x onerror=alert(1)>"})
+    assert result.lens_rule_id == "script_open"
+    assert "다른 XSS" in result.lens_message and "<script>" in result.lens_message
+
+
 def test_xss_easy_fails_at_script_close():
     result = reflected_xss.reflected_xss_easy.attempt({"query": "<script>alert(1)"})
     assert result.success is False

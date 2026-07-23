@@ -235,7 +235,7 @@ reflected_xss_easy = Lab(
         route="/labs/reflected-xss-easy",
     ),
     rules=[
-        RuleCheck("script_open", "<script> 여는 태그가 없습니다.", _has_script_open_raw),
+        RuleCheck("script_open", "<script> 여는 태그가 없습니다. 이 랩은 <script> 기법으로 판정합니다 — <img onerror> 같은 다른 XSS도 실제로는 통하지만, 이 실습은 <script>에 집중합니다.", _has_script_open_raw),
         RuleCheck("script_close", "여는 태그는 있지만 </script> 닫는 태그가 없어 브라우저가 스크립트로 인식하지 못합니다.", _has_script_close),
     ],
     resolve=_make_resolve(_identity_filter, _CODE_SNIPPET_EASY, "/labs/reflected-xss-easy"),
@@ -251,7 +251,7 @@ reflected_xss_medium = Lab(
         route="/labs/reflected-xss-medium",
     ),
     rules=[
-        RuleCheck("script_open", "<script> 여는 태그가 없습니다.", _has_script_open_raw),
+        RuleCheck("script_open", "<script> 여는 태그가 없습니다. 이 랩은 <script> 기법으로 판정합니다 — <img onerror> 같은 다른 XSS도 실제로는 통하지만, 이 실습은 <script>에 집중합니다.", _has_script_open_raw),
         RuleCheck("filter_bypass", "필터가 정확히 소문자 <script만 제거합니다. <ScRiPt>처럼 대소문자를 섞어보세요.", _script_open_survives_filter),
         RuleCheck("script_close", "여는 태그는 있지만 </script> 닫는 태그가 없어 브라우저가 스크립트로 인식하지 못합니다.", _has_script_close),
     ],
