@@ -1,0 +1,64 @@
+name: 🟠 버그
+description: 고장난 동작을 고친다
+title: "🟠 [버그] "
+labels: ["type: bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        규칙: `docs/issue-guide.md`. ⚠️ 생성 후 우선순위(P0~P3)·area 라벨을 직접 다세요.
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 우선순위
+      options:
+        - 🔴 P0 — 마일스톤/데모를 막음
+        - 🟠 P1 — 높음
+        - 🟡 P2 — 중간
+        - 🟢 P3 — 낮음
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 영역(area)
+      multiple: true
+      options:
+        - backend
+        - frontend
+        - lens
+        - visualization
+        - infra
+        - docs
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 문제 (재현)
+      description: 재현 절차 + 기대 동작 vs 실제 동작. 관련 파일 경로 포함.
+      placeholder: |
+        재현: 1) … 2) …
+        기대: …
+        실제: …
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 원인 · 제안
+      description: 원인 추정과 고칠 방향.
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: 검증
+      description: 회귀 테스트로 어떻게 재발을 막나.
+    validations:
+      required: true
+  - type: input
+    id: related
+    attributes:
+      label: 관련
+      placeholder: "#21, docs/..."
