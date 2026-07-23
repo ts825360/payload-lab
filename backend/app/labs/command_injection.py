@@ -11,7 +11,6 @@ from app.core.lab import (
     LabMetadata,
     RuleCheck,
     SuccessDetail,
-    VisualizationStep,
 )
 
 # Option A: 실제 subprocess를 절대 실행하지 않는 순수 시뮬레이션 (#4 스파이크에서
@@ -173,7 +172,7 @@ def _build_cmdi_graph(
     )
 
 
-def _make_resolve(filter_fn: Callable[[str], str], route: str, has_filter: bool = False):
+def _make_resolve(filter_fn: Callable[[str], str], has_filter: bool = False):
     def _resolve(payload: dict) -> tuple[bool, Optional[SuccessDetail]]:
         host = payload.get("host", "")
         # 순수 시뮬레이션: 실제 셸을 절대 실행하지 않고, 필터 적용 후 구분자/주입
@@ -183,22 +182,8 @@ def _make_resolve(filter_fn: Callable[[str], str], route: str, has_filter: bool 
         if sep is None or injected is None:
             return False, None
         output = _simulate(injected)
-
-        visualization = [
-            VisualizationStep(step="input", label="사용자 입력값", value=host),
-            VisualizationStep(
-                step="processing", label="서버 라우터 또는 브라우저 처리 단계",
-                value=f"셸이 {sep} 를 명령 구분자로 해석해 두 개의 명령으로 나눔",
-            ),
-            VisualizationStep(
-                step="result", label="공격 성공 결과",
-                value=f"주입한 명령 '{injected}' 실행 출력: {output}",
-            ),
-        ]
-
         return True, SuccessDetail(
-            visualization=visualization,
-            execution_graph=_build_cmdi_graph(host, sep, injected, base, output, has_filter),
+            execution_graph=_build_cmdi_graph(host, sep, injected, base, output, has_filter)
         )
 
     return _resolve
@@ -216,7 +201,7 @@ command_injection_easy = Lab(
         RuleCheck("separator", "명령을 잇는 특수문자(;, |, && 등)가 없습니다.", _has_separator),
         RuleCheck("injected_command", "구분자는 넣었지만 뒤에 실행할 명령이 없습니다.", _has_injected_command),
     ],
-    resolve=_make_resolve(_identity_filter, "/labs/command-injection-easy"),
+    resolve=_make_resolve(_identity_filter),
 )
 
 command_injection_medium = Lab(
@@ -232,5 +217,5 @@ command_injection_medium = Lab(
         RuleCheck("filter_bypass", "필터가 세미콜론(;)을 제거합니다. | 나 && 로 우회해보세요.", _separator_survives_filter),
         RuleCheck("injected_command", "구분자는 넣었지만 뒤에 실행할 명령이 없습니다.", _has_injected_command),
     ],
-    resolve=_make_resolve(_strip_semicolon, "/labs/command-injection-medium", has_filter=True),
+    resolve=_make_resolve(_strip_semicolon, has_filter=True),
 )

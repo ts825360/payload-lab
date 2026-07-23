@@ -23,8 +23,8 @@ def test_all_mvp_labs_registered():
 def test_sqli_easy_success():
     result = sql_injection.sql_injection_easy.attempt({"username": "admin' OR '1'='1' --"})
     assert result.success is True
-    assert result.server_state is not None
-    assert result.server_state.table.matched_row_indices  # 최소 한 행은 매칭됨
+    table = next(s for s in result.execution_graph.steps if s.kind == "table")
+    assert any(r.matched for r in table.rows)  # 최소 한 행은 매칭됨
 
 
 def test_sqli_easy_fails_at_quote_escape():
@@ -203,13 +203,12 @@ def test_idor_easy_dead_guessable_rule_removed():
 
 
 def test_idor_success_teaches_guessable_ids():
-    """#18: 제거한 규칙이 가르치려던 '순차/추측 가능한 ID' 개념이 성공
-    경로의 입력 단계 note로 살아남았는지 회귀 고정."""
+    """#18: 제거한 규칙이 가르치려던 '순차/추측 가능한 ID' 개념이 성공 경로의
+    관계 그래프 request 단계 note로 살아남았는지 회귀 고정."""
     result = idor.idor_easy.attempt({"requested_id": 1043})
     assert result.success is True
-    input_step = next(s for s in result.visualization if s.step == "input")
-    assert input_step.note is not None
-    assert "추측" in input_step.note
+    request_step = next(s for s in result.execution_graph.steps if s.id == "request")
+    assert "추측" in request_step.note
 
 
 def test_idor_medium_success_requires_claimed_owner():

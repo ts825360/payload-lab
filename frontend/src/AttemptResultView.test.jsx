@@ -2,47 +2,46 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
 import AttemptResultView from "./AttemptResultView.jsx";
 
-const xssResult = {
-  success: true,
-  visualization: [{ step: "input", label: "사용자 입력값", value: "<script>alert(1)</script>", note: null }],
-  server_state: null,
-  code_snippet: 'return f"<p>...</p>"',
-};
-
 const sqliResult = {
   success: true,
-  visualization: [{ step: "input", label: "사용자 입력값", value: "admin' OR '1'='1' --", note: null }],
-  server_state: { variables: [{ name: "username", value: "admin' OR", highlight: "admin' OR" }], table: null },
-  code_snippet: "query = f'...'",
+  execution_graph: {
+    attack: "sql_injection",
+    shape: "derivation",
+    payload_segments: [{ id: "or", text: " OR '1'='1'", role: "logic" }],
+    code: [],
+    code_caption: "",
+    steps: [{ id: "verdict", kind: "verdict", status: "success", text: "로그인 성공" }],
+  },
+};
+
+const xssResult = {
+  success: true,
+  execution_graph: {
+    attack: "reflected_xss",
+    shape: "derivation",
+    payload_segments: [{ id: "open", text: "<script>", role: "breakout" }],
+    code: [],
+    code_caption: "",
+    steps: [
+      { id: "live", kind: "live", label: "실행", note: "" },
+      { id: "verdict", kind: "verdict", status: "success", text: "XSS 성공" },
+    ],
+  },
 };
 
 describe("AttemptResultView", () => {
-  it("Reflected XSS 성공은 서버가 돌려준 페이지를 실제로 실행하는 iframe을 렌더한다", () => {
-    const { container } = render(
-      <AttemptResultView
-        result={xssResult}
-        submittedValue="<script>alert(1)</script>"
-        labId="reflected-xss-easy"
-        category="reflected_xss"
-      />,
-    );
-    const iframe = container.querySelector("iframe.live-frame");
-    expect(iframe).toBeInTheDocument();
-    expect(iframe.getAttribute("src")).toContain("/labs/reflected-xss-easy/render");
+  it("성공 배너와 실행 다이어그램을 함께 렌더한다", () => {
+    render(<AttemptResultView result={sqliResult} submittedValue="admin' OR '1'='1' --" labId="sql-injection-easy" />);
+    expect(screen.getByText("공격 성공")).toBeInTheDocument();
+    expect(screen.getByText("로그인 성공")).toBeInTheDocument();
   });
 
-  it("서버 상태가 있는 랩은 세 탭을 보여주고 iframe은 없다", () => {
+  it("XSS의 live 단계로 labId·submittedValue를 넘겨 실제 실행 iframe을 띄운다", () => {
     const { container } = render(
-      <AttemptResultView
-        result={sqliResult}
-        submittedValue="admin' OR '1'='1' --"
-        labId="sql-injection-easy"
-        category="sql_injection"
-      />,
+      <AttemptResultView result={xssResult} submittedValue="<script>alert(1)</script>" labId="reflected-xss-easy" />,
     );
-    expect(screen.getByRole("tab", { name: /서버 상태/ })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /코드/ })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /처리 흐름/ })).toBeInTheDocument();
-    expect(container.querySelector("iframe")).not.toBeInTheDocument();
+    const iframe = container.querySelector("iframe.deriv-live-frame");
+    expect(iframe).toBeInTheDocument();
+    expect(iframe.getAttribute("src")).toContain("/labs/reflected-xss-easy/render");
   });
 });
