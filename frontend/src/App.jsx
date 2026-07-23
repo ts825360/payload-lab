@@ -218,7 +218,6 @@ export default function App() {
                   result={result}
                   submittedValue={submittedValue}
                   labId={activeLab.id}
-                  category={activeCategory.id}
                 />
               )}
             </div>

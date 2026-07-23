@@ -13,11 +13,7 @@ from app.core.lab import (
     Lab,
     LabMetadata,
     RuleCheck,
-    ServerState,
     SuccessDetail,
-    TableState,
-    VariableState,
-    VisualizationStep,
 )
 
 # 실제 취약한 로그인 조회를 흉내내기 위해, 매 시도마다 :memory: SQLite DB를
@@ -62,20 +58,6 @@ def _run_login_query(username: str, filter_fn: Callable[[str], str]) -> tuple[bo
     finally:
         conn.close()
     return bool(rows), query, rows
-
-
-_CODE_SNIPPET_EASY = (
-    "query = f\"SELECT * FROM users WHERE username = '{username}' \"\n"
-    "        \"AND password = '{password}'\"\n"
-    "rows = conn.execute(query).fetchall()"
-)
-
-_CODE_SNIPPET_MEDIUM = (
-    "username = username.replace('OR', '')  # 대문자 OR만 지우는 순진한 필터\n"
-    "query = f\"SELECT * FROM users WHERE username = '{username}' \"\n"
-    "        \"AND password = '{password}'\"\n"
-    "rows = conn.execute(query).fetchall()"
-)
 
 
 # --------------------------------------------------------------------------
@@ -245,49 +227,13 @@ def _build_sqli_graph(
     )
 
 
-def _make_resolve(filter_fn: Callable[[str], str], code_snippet: str, route: str, has_filter: bool = False):
+def _make_resolve(filter_fn: Callable[[str], str], has_filter: bool = False):
     def _resolve(payload: dict) -> tuple[bool, Optional[SuccessDetail]]:
         username = payload.get("username", "")
-        success, query, rows = _run_login_query(username, filter_fn)
+        success, _query, rows = _run_login_query(username, filter_fn)
         if not success:
             return False, None
-
-        visualization = [
-            VisualizationStep(step="input", label="사용자 입력값", value=username),
-            VisualizationStep(
-                step="request", label="요청 또는 브라우저 이벤트",
-                value=f'POST {route}/attempt  body: {{"username": "{username}"}}',
-            ),
-            VisualizationStep(
-                step="processing", label="서버 라우터 또는 브라우저 처리 단계",
-                value="로그인 라우터가 username을 그대로 받아 인증용 SQL 쿼리 문자열을 조립",
-            ),
-            VisualizationStep(
-                step="result", label="공격 성공 결과",
-                value=f"비밀번호 몰라도 로그인 성공, 반환된 행: {rows}",
-            ),
-        ]
-
-        matched_indices = [i for i, u in enumerate(_SEED_USERS) if u in rows]
-        server_state = ServerState(
-            variables=[
-                VariableState(name="username", value=username, highlight=username),
-                VariableState(name="query", value=query, highlight=filter_fn(username)),
-            ],
-            table=TableState(
-                name="users",
-                columns=["id", "username", "password"],
-                rows=[[str(u[0]), u[1], u[2]] for u in _SEED_USERS],
-                matched_row_indices=matched_indices,
-            ),
-        )
-
-        return True, SuccessDetail(
-            visualization=visualization,
-            server_state=server_state,
-            code_snippet=code_snippet,
-            execution_graph=_build_sqli_graph(username, rows, has_filter),
-        )
+        return True, SuccessDetail(execution_graph=_build_sqli_graph(username, rows, has_filter))
 
     return _resolve
 
@@ -323,7 +269,7 @@ sql_injection_easy = Lab(
         RuleCheck("always_true", "따옴표 탈출은 됐지만 항상 참인 조건을 만들지 못했습니다.", _has_always_true_condition),
         RuleCheck("comment_terminator", "조건까지는 맞췄지만 비밀번호 검사를 무력화할 주석이 없습니다.", _has_comment_terminator),
     ],
-    resolve=_make_resolve(_identity_filter, _CODE_SNIPPET_EASY, "/labs/sql-injection-easy"),
+    resolve=_make_resolve(_identity_filter),
 )
 
 sql_injection_medium = Lab(
@@ -340,5 +286,5 @@ sql_injection_medium = Lab(
         RuleCheck("always_true", "따옴표 탈출은 됐지만 항상 참인 조건을 만들지 못했습니다.", _has_always_true_condition),
         RuleCheck("comment_terminator", "조건까지는 맞췄지만 비밀번호 검사를 무력화할 주석이 없습니다.", _has_comment_terminator),
     ],
-    resolve=_make_resolve(_strip_uppercase_or, _CODE_SNIPPET_MEDIUM, "/labs/sql-injection-medium", has_filter=True),
+    resolve=_make_resolve(_strip_uppercase_or, has_filter=True),
 )

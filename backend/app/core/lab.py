@@ -14,31 +14,6 @@ class RuleCheck:
     check: Callable[[Any], bool]
 
 
-class VisualizationStep(BaseModel):
-    step: str
-    label: str
-    value: str
-    note: Optional[str] = None
-
-
-class VariableState(BaseModel):
-    name: str
-    value: str
-    highlight: Optional[str] = None
-
-
-class TableState(BaseModel):
-    name: str
-    columns: list[str]
-    rows: list[list[str]]
-    matched_row_indices: list[int] = []
-
-
-class ServerState(BaseModel):
-    variables: list[VariableState]
-    table: Optional[TableState] = None
-
-
 class LabMetadata(BaseModel):
     id: str
     name: str
@@ -145,17 +120,11 @@ class ExecutionGraph(BaseModel):
 
 
 class SuccessDetail(BaseModel):
-    visualization: list[VisualizationStep]
-    server_state: Optional[ServerState] = None
-    code_snippet: Optional[str] = None
-    execution_graph: Optional[ExecutionGraph] = None
+    execution_graph: ExecutionGraph
 
 
 class AttemptResult(BaseModel):
     success: bool
-    visualization: Optional[list[VisualizationStep]] = None
-    server_state: Optional[ServerState] = None
-    code_snippet: Optional[str] = None
     execution_graph: Optional[ExecutionGraph] = None
     lens_message: Optional[str] = None
     lens_rule_id: Optional[str] = None
@@ -198,13 +167,7 @@ class Lab:
             # was the one path that could still crash the request).
             return self._diagnose(payload)
         if success:
-            return AttemptResult(
-                success=True,
-                visualization=detail.visualization,
-                server_state=detail.server_state,
-                code_snippet=detail.code_snippet,
-                execution_graph=detail.execution_graph,
-            )
+            return AttemptResult(success=True, execution_graph=detail.execution_graph)
         return self._diagnose(payload)
 
     def _diagnose(self, payload: Any) -> AttemptResult:
