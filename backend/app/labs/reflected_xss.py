@@ -11,6 +11,7 @@ from app.core.lab import (
     LabMetadata,
     RuleCheck,
     SuccessDetail,
+    filter_step,
 )
 
 _SCRIPT_OPEN = re.compile(r"<script", re.IGNORECASE)
@@ -117,22 +118,15 @@ def _build_xss_graph(raw_query: str, has_filter: bool) -> ExecutionGraph:
     ]
 
     if has_filter:
-        steps.append(
-            DerivStep(
-                id="filter",
-                kind="query",
-                side="server",
-                label="②′ 순진한 필터를 통과",
-                spans=[
-                    DerivSpan(text="필터가 소문자 "),
-                    DerivSpan(text="<script", style="muted"),
-                    DerivSpan(text="만 지움 → 대소문자 섞은 "),
-                    DerivSpan(text=next((s.text for s in segs if s.id == "open"), "<ScRiPt>"), group="open", style="taint"),
-                    DerivSpan(text="는 살아남음"),
-                ],
-                note="Medium의 필터는 정확히 소문자 <script만 제거한다",
-            )
+        step = filter_step(
+            removed_prefix="소문자 ",
+            removed="<script",
+            survivor_text=next((s.text for s in segs if s.id == "open"), "<ScRiPt>"),
+            survivor_group="open",
+            note="Medium의 필터는 정확히 소문자 <script만 제거한다",
         )
+        step.side = "server"
+        steps.append(step)
 
     steps.append(
         DerivStep(
