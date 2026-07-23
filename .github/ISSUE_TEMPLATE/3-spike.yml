@@ -1,0 +1,62 @@
+name: 🟡 교차검증 · 스파이크 (verify-before-decide)
+description: 결정하기 전에 실제·적대적 입력에 직접 대봐야 하는 검증
+title: "🟡 [교차검증] "
+labels: ["needs-spike"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **검증을 결정보다 먼저.** 규칙·스키마·인터페이스는 현실적·적대적 입력에 대보기 전에는 신뢰하지 않는다.
+        규칙: `docs/issue-guide.md`. ⚠️ 생성 후 우선순위·type·area 라벨을 직접 다세요.
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 우선순위
+      options:
+        - 🔴 P0 — 마일스톤/데모를 막음
+        - 🟠 P1 — 높음
+        - 🟡 P2 — 중간
+        - 🟢 P3 — 낮음
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 영역(area)
+      multiple: true
+      options:
+        - backend
+        - frontend
+        - lens
+        - visualization
+        - infra
+        - docs
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: 문제
+      description: 무엇을 결정하려 하고, 왜 실제로 대봐야만 아는가.
+    validations:
+      required: true
+  - type: textarea
+    id: method
+    attributes:
+      label: 검증 방법 (제안)
+      description: 어떤 실제·적대적 입력을 어떻게 대볼 것인가 (스파이크 스크립트/배치, 기대 대조 방식).
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: 결과 · 결정 (완료 조건)
+      description: 검증 결과와 그로부터의 결정을 이 이슈에 기록하면 완료.
+      placeholder: 검증 후 결과 표/요약과 결정을 여기에 남긴다.
+    validations:
+      required: true
+  - type: input
+    id: related
+    attributes:
+      label: 관련
+      placeholder: "#21, docs/..."
