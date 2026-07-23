@@ -6,7 +6,7 @@ note 문자열을 고치다가 실수로 로직(정규식, 필터 등)까지 건
 바로 잡힌다.
 """
 
-from app.labs import REGISTRY, sql_injection, reflected_xss, idor
+from app.labs import REGISTRY, sql_injection, reflected_xss, idor, command_injection
 
 
 def test_all_mvp_labs_registered():
@@ -213,3 +213,54 @@ def test_idor_medium_fails_without_correct_claim():
     result = idor.idor_medium.attempt({"requested_id": 1043, "claimed_user_id": 1})
     assert result.success is False
     assert result.lens_rule_id == "claims_correct_owner"
+
+
+# ---------------------------------------------------------- Command Injection
+
+def test_cmdi_labs_registered():
+    assert {"command-injection-easy", "command-injection-medium"} <= REGISTRY.keys()
+
+
+def test_cmdi_easy_success_simulates_output_and_builds_graph():
+    result = command_injection.command_injection_easy.attempt({"host": "localhost; whoami"})
+    assert result.success is True
+    g = result.execution_graph
+    assert g is not None and g.attack == "command_injection" and g.shape == "derivation"
+    # 순수 시뮬레이션: whoami -> root 가 출력 단계에 반영됐는지
+    output_step = next(s for s in g.steps if s.id == "output")
+    assert "root" in output_step.spans[0].text
+    seg_ids = {s.id for s in g.payload_segments}
+    assert {"sep", "cmd"} <= seg_ids
+
+
+def test_cmdi_easy_fails_at_separator():
+    result = command_injection.command_injection_easy.attempt({"host": "localhost"})
+    assert result.success is False
+    assert result.lens_rule_id == "separator"
+
+
+def test_cmdi_easy_fails_at_injected_command():
+    result = command_injection.command_injection_easy.attempt({"host": "localhost;"})
+    assert result.success is False
+    assert result.lens_rule_id == "injected_command"
+
+
+def test_cmdi_medium_semicolon_blocked_by_filter():
+    """Easy에서 통하던 세미콜론이 Medium 필터에 걸린다."""
+    result = command_injection.command_injection_medium.attempt({"host": "localhost; whoami"})
+    assert result.success is False
+    assert result.lens_rule_id == "filter_bypass"
+
+
+def test_cmdi_medium_pipe_bypass_succeeds():
+    result = command_injection.command_injection_medium.attempt({"host": "localhost | whoami"})
+    assert result.success is True
+    assert result.execution_graph is not None
+
+
+def test_cmdi_never_runs_a_real_shell():
+    """안전 회귀: 시뮬레이션이라 알 수 없는 명령도 크래시 없이 흉내낸 출력만 낸다."""
+    result = command_injection.command_injection_easy.attempt({"host": "localhost; rm -rf /"})
+    assert result.success is True
+    output_step = next(s for s in result.execution_graph.steps if s.id == "output")
+    assert "rm -rf /" in output_step.spans[0].text  # 실행이 아니라 문자열로만 반영

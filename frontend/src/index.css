@@ -1204,6 +1204,7 @@ body {
   border-radius: var(--radius-sm);
   padding: 0.6rem 0.75rem;
   word-break: break-all;
+  white-space: pre-wrap;
 }
 .deriv-note {
   font-size: 0.8rem;
