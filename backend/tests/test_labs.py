@@ -264,3 +264,24 @@ def test_cmdi_never_runs_a_real_shell():
     assert result.success is True
     output_step = next(s for s in result.execution_graph.steps if s.id == "output")
     assert "rm -rf /" in output_step.spans[0].text  # 실행이 아니라 문자열로만 반영
+
+
+def test_cmdi_output_is_labeled_as_simulation():
+    """정직성: 이 랩만 유일하게 실제 실행이 아니므로, 출력/판정이 시뮬레이션임을 밝혀야 한다."""
+    result = command_injection.command_injection_easy.attempt({"host": "localhost; whoami"})
+    steps = {s.id: s for s in result.execution_graph.steps}
+    assert "시뮬레이션" in steps["output"].label
+    assert "실제 셸을 실행하지 않습니다" in steps["output"].note
+    assert "시뮬레이션" in steps["verdict"].text
+
+
+def test_cmdi_single_ampersand_and_newline_are_separators():
+    """false negative 방지: 단일 &(백그라운드)와 개행도 실제 셸의 유효한 주입 벡터다.
+    이걸 '특수문자가 없다'고 오진하면 안 된다."""
+    for host in ("localhost & whoami", "localhost\nwhoami"):
+        result = command_injection.command_injection_easy.attempt({"host": host})
+        assert result.success is True, f"{host!r} should be recognized as injection"
+    # && 는 여전히 단일 & 보다 먼저 매칭돼야 한다 (우선순위 회귀)
+    r = command_injection.command_injection_easy.attempt({"host": "localhost && id"})
+    seps = [s.text for s in r.execution_graph.payload_segments if s.id == "sep"]
+    assert seps == ["&&"]

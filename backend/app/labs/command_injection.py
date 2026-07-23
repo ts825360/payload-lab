@@ -18,7 +18,9 @@ from app.core.lab import (
 # 안전 설계로 확정). 입력 문자열을 파싱해 "진짜 셸이었다면 이렇게 됐을" 결과를
 # 흉내낼 뿐이다. 실제 bash는 ;; ||| 같은 걸 더 엄격히 따지지만 그건 알려진 단순화.
 
-_SEP_RE = re.compile(r"(\|\||&&|;|\||`|\$\()")
+# 실제 셸의 명령 구분자들. 순서 중요: ||, && 를 단일 |, & 보다 먼저 매칭해야 한다.
+# 단일 &(백그라운드)와 개행도 실제 셸에서 유효한 주입 벡터라 포함한다 (false negative 방지).
+_SEP_RE = re.compile(r"(\|\||&&|;|\||&|`|\$\(|[\n\r])")
 
 _SIM_OUTPUT = {
     "whoami": "root",
@@ -49,7 +51,7 @@ def _split_injection(host: str) -> tuple[Optional[str], Optional[str], str]:
 
 
 def _simulate(cmd: str) -> str:
-    return _SIM_OUTPUT.get(cmd.strip(), f"(명령 '{cmd.strip()}' 이 서버에서 실행되어 출력을 반환)")
+    return _SIM_OUTPUT.get(cmd.strip(), f"(명령 '{cmd.strip()}' 의 출력 — 시뮬레이션)")
 
 
 # ------------------------------------------------------------------ rules (Lens)
@@ -142,9 +144,9 @@ def _build_cmdi_graph(
         DerivStep(
             id="output",
             kind="query",
-            label="④ 주입한 명령의 실제 출력",
+            label="④ 주입한 명령의 예상 출력 (시뮬레이션)",
             spans=[DerivSpan(text=f"$ {injected}\n{output}", group="cmd", style="taint")],
-            note="주입한 명령이 서버 권한(root)으로 실행됐다",
+            note="이 랩은 안전을 위해 실제 셸을 실행하지 않습니다 — 진짜 셸이라면 아래처럼 서버 권한(root)으로 실행됩니다.",
         )
     )
     steps.append(
@@ -152,7 +154,7 @@ def _build_cmdi_graph(
             id="verdict",
             kind="verdict",
             status="success",
-            text=f"주입한 명령({injected})이 서버에서 실행됨 — Command Injection 성공",
+            text=f"주입한 명령({injected})이 실행되는 조건 성립 — Command Injection 성공 (실제 실행은 안전을 위해 시뮬레이션)",
         )
     )
 
