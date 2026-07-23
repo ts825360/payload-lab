@@ -38,6 +38,15 @@ export const CATEGORIES = [
       medium: [{ name: "claimed_user_id", label: "claimed_user_id (소유자로 위장)", placeholder: "2001", numeric: true }],
     },
   },
+  {
+    id: "command_injection",
+    label: "Command Injection",
+    tag: "CMDi",
+    field: "host",
+    scenario: "실제 서버 상태를 확인하는 ping 도구입니다. 호스트 뒤에 명령을 몰래 붙여 실행해 보세요.",
+    fieldLabel: "확인할 호스트",
+    placeholder: { easy: "localhost; whoami", medium: "localhost | whoami" },
+  },
 ];
 
 function labId(categoryId, difficulty) {
