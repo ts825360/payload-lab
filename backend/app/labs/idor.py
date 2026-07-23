@@ -89,22 +89,37 @@ def _build_idor_graph(requested_id: int, claimed_user_id: Optional[int] = None) 
             )
         )
 
+    rel_objects = [
+        RelObject(id="order_req", title=f"주문 {requested_id}", subtitle=f"주인 = {real_owner}", tone="other"),
+        RelObject(id="owner_other", title=f"사용자 {real_owner}", subtitle="이 주문의 주인 (남)", tone="other"),
+        RelObject(id="order_mine", title=f"주문 {_CURRENT_USER_ID}", subtitle=f"주인 = {_CURRENT_USER_ID}", tone="mine"),
+        RelObject(id="me", title="나 (로그인)", subtitle=f"user {_CURRENT_USER_ID}", tone="mine"),
+    ]
+    rel_arrows = [
+        RelArrow(source="order_req", target="owner_other", label="주인", tone="other"),
+        RelArrow(source="order_mine", target="me", label="주인", tone="mine"),
+    ]
+    rel_note = "내 주문의 주인 화살표는 나를, 요청한 주문의 주인 화살표는 남을 가리킨다 — 서버는 이 화살표를 확인하지 않았다."
+
+    # Medium: 서버가 세션 대신 내가 보낸 claimed_user_id를 그대로 믿는다는 걸,
+    # "주장한 주인 → 실제 주인" 화살표로 보여준다 (code-review 스펙 감사 반영).
+    if claimed_user_id is not None:
+        rel_objects.append(
+            RelObject(id="claimed", title="내가 주장한 주인", subtitle=f"claimed_user_id = {claimed_user_id}", tone="other")
+        )
+        rel_arrows.append(
+            RelArrow(source="claimed", target="owner_other", label="== 실제 주인이라 서버가 통과시킴", tone="other")
+        )
+        rel_note += " Medium은 서버가 세션 대신 내가 보낸 claimed_user_id를 그대로 믿어, 실제 주인 번호만 맞추면 통과된다."
+
     steps.append(
         DerivStep(
             id="relations",
             kind="relations",
             label="③ 주인 화살표가 누구를 가리키나",
-            note="내 주문의 주인 화살표는 나를, 요청한 주문의 주인 화살표는 남을 가리킨다 — 서버는 이 화살표를 확인하지 않았다.",
-            objects=[
-                RelObject(id="order_req", title=f"주문 {requested_id}", subtitle=f"주인 = {real_owner}", tone="other"),
-                RelObject(id="owner_other", title=f"사용자 {real_owner}", subtitle="이 주문의 주인 (남)", tone="other"),
-                RelObject(id="order_mine", title=f"주문 {_CURRENT_USER_ID}", subtitle=f"주인 = {_CURRENT_USER_ID}", tone="mine"),
-                RelObject(id="me", title="나 (로그인)", subtitle=f"user {_CURRENT_USER_ID}", tone="mine"),
-            ],
-            arrows=[
-                RelArrow(source="order_req", target="owner_other", label="주인", tone="other"),
-                RelArrow(source="order_mine", target="me", label="주인", tone="mine"),
-            ],
+            note=rel_note,
+            objects=rel_objects,
+            arrows=rel_arrows,
         )
     )
     steps.append(

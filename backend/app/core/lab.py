@@ -119,6 +119,37 @@ class ExecutionGraph(BaseModel):
     steps: list[DerivStep] = []
 
 
+def filter_step(
+    *,
+    removed: str,
+    survivor_text: str,
+    survivor_group: str,
+    note: str,
+    removed_prefix: str = "",
+    survivor_prefix: str = "대소문자 섞은 ",
+    tail: str = "는 살아남음",
+) -> DerivStep:
+    """Medium 랩 공통의 "②′ 순진한 필터를 통과" 단계.
+
+    세 랩(SQLi/XSS/CmdInjection)의 필터 우회 설명이 "필터가 {removed}만 지움 →
+    {survivor}는 살아남음" 골격으로 동일해서 하나로 추출한다 (code-review 표준
+    감사에서 지적된 중복 제거).
+    """
+    return DerivStep(
+        id="filter",
+        kind="query",
+        label="②′ 순진한 필터를 통과",
+        spans=[
+            DerivSpan(text=f"필터가 {removed_prefix}"),
+            DerivSpan(text=removed, style="muted"),
+            DerivSpan(text=f"만 지움 → {survivor_prefix}"),
+            DerivSpan(text=survivor_text, group=survivor_group, style="taint"),
+            DerivSpan(text=tail),
+        ],
+        note=note,
+    )
+
+
 class SuccessDetail(BaseModel):
     execution_graph: ExecutionGraph
 

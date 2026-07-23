@@ -15,42 +15,49 @@
 
 ---
 
-## 제안 스키마 (백엔드가 내려줄 계약)
+## 스키마 (백엔드가 내려줄 계약 — 실제 구현된 형태)
+
+> 처음 제안은 `nodes[]/edges[]/boundaries[]/links[[id,id]]`였으나, 구현하면서 두 가지를
+> 단순화했다: (1) 노드/엣지를 **렌더 순서대로 나열되는 `steps` 태그 유니온**으로,
+> (2) 무방향 `links` 배열을 **공유 `group` 문자열**로. 효과(양방향 하이라이트)는 동일하고
+> 저작·렌더가 더 단순하다. 아래는 실제 코드(`backend/app/core/lab.py`)와 일치하는 계약이다.
 
 ```
 ExecutionGraph:
   attack: str
-  payload_segments: [Segment]     # 입력을 "의미 있는 조각"으로 분할
-  nodes: [Node]
-  edges: [Edge]                   # 노드 간 데이터 이동 (화살표)
-  boundaries: [Boundary]          # 선택: 신뢰 경계 (예: 서버 → 브라우저)
-  code: CodeRef                   # 취약 코드 + 앵커(하이라이트 대상 span)
-  data: DataRef?                  # 선택: 결과 테이블/행
+  shape: "derivation" | "relational"
+  payload_segments: [Segment]        # 입력을 "의미 있는 조각"으로 분할
+  code_caption: str
+  code: [CodeSpan]                   # 코드 = span 리스트, 일부가 group을 달아 하이라이트
+  steps: [DerivStep]                 # 렌더 순서대로 나열된 단계 (kind로 분기)
 
-Segment: { id, text, role }       # role: benign|breakout|logic|comment|injected
-Node:    { id, kind, title, subtitle, taint: bool, severity, status, side }
-          # kind: value|operation|sink|missing|result
-          # severity: "" | danger(=취약 지점)
-          # status: "" | success | blocked
-          # side: server | browser   (경계 레이아웃용)
-Edge:    { from, to, label? }
-Boundary:{ after_node_id, label }
-CodeRef: { language, lines: [{ text, anchors: [{id, span:[a,b]}] }] }
-DataRef: { table, columns, rows: [{ id, cells, matched: bool }] }
+Segment:  { id, text, role }         # id가 곧 하이라이트 group. role: benign|breakout|logic|comment|injected
+CodeSpan: { text, group? }
+DerivSpan:{ text, group?, style? }   # style: taint|danger|comment|muted|slot
 
-links: [[id_a, id_b], ...]        # ★ 핵심: 모든 요소 id를 잇는 "무방향" 연결 집합
+DerivStep:  # kind로 렌더가 갈린다
+  kind="query"     : spans[DerivSpan], label?, note?         # 유도 과정 한 줄(문자열 상태)
+  kind="split"     : conditions[{text, group?, result}], op, note?
+  kind="table"     : columns, rows[{cells, matched}], note?
+  kind="boundary"  : label, note?                            # 서버 → 브라우저 구분선(XSS)
+  kind="live"      : label, note?                            # 실제 실행 iframe(XSS)
+  kind="note"      : label, note, style?                     # style="missing"=점선 유령 노드(IDOR)
+  kind="relations" : objects[RelObject], arrows[RelArrow], note?   # 관계 그래프(IDOR)
+  kind="verdict"   : status, text
+RelObject: { id, title, subtitle?, tone }   # tone: mine|other|missing|neutral
+RelArrow:  { source, target, label?, tone }
 ```
 
-### ★ 양방향 하이라이트를 "공짜로" 만드는 한 가지 결정
+### ★ 양방향 하이라이트 — `links` 배열 없이 "공유 group"으로
 
-세그먼트·노드·코드앵커·데이터행이 **모두 전역 고유 id**를 갖고, 그들 사이의 연관을
-**무방향 `links` 하나**로 표현한다. UI 규칙은 단 하나:
+세그먼트·코드 span·단계 span·(관계)행이 **공유 `group` 문자열**을 단다.
+Segment.id가 곧 group이고, 어디든 같은 group을 단 span은 한 덩어리다. UI 규칙은 하나:
 
-> 어떤 요소 E에 hover/focus하면, E와 `links`로 이어진 모든 이웃을 함께 강조한다.
+> 어떤 요소 E에 hover/focus하면, E와 **같은 group을 가진 모든 요소**를 함께 강조한다.
 
-이렇게 하면 "payload→node"와 "node→payload"를 따로 배선할 필요가 없다 —
-같은 링크를 양쪽으로 읽을 뿐이라 **양방향이 구조적으로 보장**된다.
-(hover=탐색, click=고정(pin)해서 읽기, focus=키보드/터치 동일 동작.)
+"payload→span"과 "span→payload"를 따로 배선할 필요가 없다 — 같은 group을 양쪽에서
+읽을 뿐이라 **양방향이 구조적으로 보장**된다.
+(hover=탐색, focus=키보드/터치 동일 동작. 구현: `frontend/src/ExecutionGraphView.jsx`)
 
 ---
 

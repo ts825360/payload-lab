@@ -11,6 +11,7 @@ from app.core.lab import (
     LabMetadata,
     RuleCheck,
     SuccessDetail,
+    filter_step,
 )
 
 # Option A: 실제 subprocess를 절대 실행하지 않는 순수 시뮬레이션 (#4 스파이크에서
@@ -116,17 +117,11 @@ def _build_cmdi_graph(
 
     if has_filter:
         steps.append(
-            DerivStep(
-                id="filter",
-                kind="query",
-                label="②′ 순진한 필터를 통과",
-                spans=[
-                    DerivSpan(text="필터가 "),
-                    DerivSpan(text=";", style="muted"),
-                    DerivSpan(text="만 지움 → "),
-                    DerivSpan(text=sep, group="sep", style="taint"),
-                    DerivSpan(text="는 살아남음"),
-                ],
+            filter_step(
+                removed=";",
+                survivor_text=sep,
+                survivor_group="sep",
+                survivor_prefix="",
                 note="Medium의 필터는 세미콜론만 제거한다",
             )
         )

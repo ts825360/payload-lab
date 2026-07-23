@@ -222,6 +222,21 @@ def test_idor_medium_fails_without_correct_claim():
     assert result.lens_rule_id == "claims_correct_owner"
 
 
+def test_idor_medium_graph_shows_claimed_owner_arrow():
+    """#20 code-review 반영: medium은 claimed_user_id를 note뿐 아니라 실제 관계
+    화살표(주장한 주인 → 실제 주인)로도 보여준다. easy에는 없어야 한다."""
+    rel = next(
+        s for s in idor.idor_medium.attempt({"requested_id": 1043, "claimed_user_id": 2001}).execution_graph.steps
+        if s.kind == "relations"
+    )
+    assert any(o.id == "claimed" for o in rel.objects)
+    assert any(a.source == "claimed" for a in rel.arrows)
+    easy_rel = next(
+        s for s in idor.idor_easy.attempt({"requested_id": 1043}).execution_graph.steps if s.kind == "relations"
+    )
+    assert not any(o.id == "claimed" for o in easy_rel.objects)
+
+
 # ---------------------------------------------------------- Command Injection
 
 def test_cmdi_labs_registered():

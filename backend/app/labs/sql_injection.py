@@ -14,6 +14,7 @@ from app.core.lab import (
     LabMetadata,
     RuleCheck,
     SuccessDetail,
+    filter_step,
 )
 
 # 실제 취약한 로그인 조회를 흉내내기 위해, 매 시도마다 :memory: SQLite DB를
@@ -137,17 +138,12 @@ def _build_sqli_graph(
 
     if has_filter:
         steps.append(
-            DerivStep(
-                id="filter",
-                kind="query",
-                label="②′ 순진한 필터를 통과",
-                spans=[
-                    DerivSpan(text="필터가 대문자 "),
-                    DerivSpan(text="OR", style="muted"),
-                    DerivSpan(text="만 지움 → 대소문자 섞은 "),
-                    DerivSpan(text=logic_text or "oR …", group="logic", style="taint"),
-                    DerivSpan(text=" 은 살아남음"),
-                ],
+            filter_step(
+                removed_prefix="대문자 ",
+                removed="OR",
+                survivor_text=logic_text or "oR …",
+                survivor_group="logic",
+                tail=" 은 살아남음",
                 note="Medium의 필터는 정확히 대문자 OR만 제거한다",
             )
         )
