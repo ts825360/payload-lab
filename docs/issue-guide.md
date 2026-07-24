@@ -61,13 +61,15 @@
 
 | 이슈 유형 / area | 활용 스킬 | 언제 |
 |---|---|---|
-| 프론트·시각화 구현/리디자인 (`area: frontend`/`visualization`) | ⭐ `frontend-design` + `visualize`(show_widget) | UI·다이어그램은 **코드 전에 목업**으로 방향을 검증한 뒤 구현 |
+| 프론트·시각화 구현/리디자인 (`area: frontend`/`visualization`) | ⭐ `frontend-design` · `taste-skill` + `visualize`(show_widget) | 일반 UI·다이어그램은 `frontend-design`, **랜딩·포트폴리오·리디자인**은 `taste-skill`(브리프 먼저 읽는 안티-템플릿). 코드 전에 목업으로 방향 검증 |
+| 애니메이션·모션 (`area: frontend`) | `animate` | hover·페이지 전환·모달·리스트 정렬 등 **모션**을 넣을 때 (이징·접근성 포함) |
 | 검증·리뷰 이슈 (기능별·최종 통합) | ⭐ `code-review` (표준·스펙 2축) | A3 검증. 큰 변경/PR을 닫기 전 감사 |
 | 취약 실행부·배포 안전성 (`area: infra`, 랩 추가) | `security-review` | 실행 위험이 있는 이슈(새 랩·배포)를 닫기 전 안전 확인 |
 | 자료조사 이슈 (#14–17 류) | ⭐ `research` + WebSearch | 문안·근거를 1차 출처로 채울 때 |
 | 스파이크·프로토타입 (`needs-spike`) | `prototype` · `tdd` · `diagnosing-bugs` | A2에서 로직·안전성을 실제로 대볼 때 |
 
 > **규칙**: 없는 스킬을 지어내지 말고 **실제 설치·검증된 스킬만** 적는다. 새 스킬을 도입하면 이 표에 한 줄 추가한다. 어떤 스킬을 쓸지 애매하면 A2처럼 사용자에게 물어 결정한다.
+> `taste-skill`·`animate`는 새로 설치했으나 아직 프로젝트에서 써보지 않았다(그래서 ⭐ 없음) — 처음 쓸 때 결과를 이슈 댓글로 남긴다(A5).
 
 ---
 
@@ -134,7 +136,7 @@
 ## B7. AI 에이전트에게 맡길 때 (프롬프트 관점)
 - **범위를 하나로** 좁혀라. **완료 조건(`## 검증`)을 테스트 가능하게** 적어라.
 - **파일 경로·타입·예시 입력/출력**을 본문에 넣어라.
-- **유형·area에 맞는 스킬을 호출하라**(A6): 프론트·시각화면 `frontend-design`·`visualize`, 검증이면 `code-review`, 자료조사면 `research`.
+- **유형·area에 맞는 스킬을 호출하라**(A6): 프론트·시각화면 `frontend-design`·`taste-skill`·`animate`·`visualize`, 검증이면 `code-review`, 자료조사면 `research`.
 - 결정 지점은 옵션으로 제시하고, **AI가 임의로 결정하지 않도록** `needs-decision`을 붙여라.
 
 ## B8. 좋은 예 / 나쁜 예
